@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Admin Page - title</title>
+</head>
+<body>
+    <h1>Admin Page</h1>
+
+    <h2>Create New Auction Item</h2>
+    <form method="POST" action="/admin" enctype="multipart/form-data"> <!-- Add enctype attribute for file upload -->
+        <label for="name">Item Name:</label>
+        <input type="text" name="name" required><br><br>
+        <label for="starting_price">Starting Price:</label>
+        <input type="number" name="starting_price" required><br><br>
+        <label for="end_time">End Time:</label>
+        <input type="datetime-local" name="end_time" required><br><br>
+        <label for="image_filename">Image File:</label> <!-- Change label text to "Image File" -->
+        <input type="file" name="image_file" accept=".jpg" required><br><br> <!-- Add file input field with accept attribute for .jpg files -->
+        <label for="description">Description:</label>
+        <textarea name="description" required></textarea><br><br>
+        <input type="submit" value="Create Item">
+    </form>
+
+    <h2>Existing Auction Items</h2>
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Starting Price</th>
+            <th>End Time</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </tr>
+        {% for index, item in enumerate(items) %}
+        <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.starting_price }}</td>
+            <td>{{ item.end_time }}</td>
+            <td>
+                <ul>
+                    {% for line in item.description.split('\n') %}
+                        <li>{{ line }}</li>
+                    {% endfor %}
+                </ul>
+            </td>
+            <td>
+                <form method="POST" action="/delete">
+                    <input type="hidden" name="item_index" value="{{ index }}">
+                    <input type="submit" value="Delete">
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <br><br>
+    <a href="/logout">Logout</a>
+</body>
+</html>

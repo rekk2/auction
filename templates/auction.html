@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<title>title</title>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='auction.css') }}">
+<script>
+    function updateTime(endTime, timerElement) {
+        var countDownDate = new Date(endTime).getTime();
+
+        var x = setInterval(function() {
+            var now = new Date().getTime();
+            var distance = countDownDate - now;
+        
+            var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        
+            timerElement.innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+			// Apply styling for less than 1 hour remaining
+            if (distance < (60 * 60 * 1000)) {
+                timerElement.style.color = 'red';
+                timerElement.style.fontWeight = 'bold';
+            } else {
+                timerElement.style.color = ''; // Reset color
+                timerElement.style.fontWeight = ''; // Reset font weight
+            }
+            if (distance < 0) {
+                clearInterval(x);
+                timerElement.innerHTML = "AUCTION CLOSED";
+            }
+        }, 1000);
+    }
+
+    window.addEventListener("DOMContentLoaded", function() {
+        var timers = document.getElementsByClassName("timer");
+        for (var i = 0; i < timers.length; i++) {
+            var endTime = timers[i].getAttribute("data-end-time");
+            updateTime(endTime, timers[i]);
+        }
+    });
+</script>
+<style>
+    body {
+        font-family: 'Lato', sans-serif;
+    }
+</style>
+</head>
+<body>
+<div class="item-container">
+    {% for item in items %}
+        <div class="item">
+            <h1>{{ item.name }}</h1>
+            <img src="{{ url_for('static', filename=item.image_url) }}" alt="Item Image">
+            <p class="item-description">{{ item.description | safe }}</p>
+            <p>Current Price: {{ item.current_price }}</p>
+            <p>Highest Bidder: {{ item.highest_bidder.name if item.highest_bidder else 'None' }}</p>
+
+            <form method="POST" action="/">
+                <input type="hidden" name="item_index" value="{{ loop.index0 }}">
+                <label for="bidder_name">Name:</label>
+                <input type="text" name="bidder_name" required pattern=".{4,}" title="Bidder name must be 4 characters or more"><br>
+                {% if error_message %}
+                <span style="color: red;">{{ error_message }}</span><br>
+                {% endif %}
+                <label for="bid_amount">Bid Amount:</label>
+                <input type="number" name="bid_amount" required><br><br>
+                <input type="submit" value="Place Bid">
+            </form>
+
+            <div class="timer" data-end-time="{{ item.end_time }}"></div>
+            <hr>
+        </div>
+    {% endfor %}
+</div>
+{% if bidder.notifications %}
+    <div class="notifications {% if bidder.notifications_accepted %}green{% elif bidder.notifications_invalid %}red{% endif %}">
+        <ul>
+            {% for message in bidder.notifications %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+</body>
+</html>

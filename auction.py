@@ -48,14 +48,24 @@ class AuctionItem:
             if self.highest_bidder:
                 self.highest_bidder.notify_outbid(self.name, self.current_price)
 
-            if not self.is_expired() and self.time_remaining() < timedelta(hours=1):
-                minimum_bid = self.current_price + min(self.time_increases + 1, 4)  # Calculate the minimum bid
+            if not self.is_expired() and self.time_remaining() < timedelta(minutes=30):
+                if self.time_increases >= 5:
+                    minimum_bid = self.current_price + 5
+                else:
+                    minimum_bid = self.current_price + min(self.time_increases + 1, 4)
+
                 if bid_amount < minimum_bid:
                     bidder.notify_invalid_bid(self.name, bid_amount, minimum_bid)
                     return
 
-                self.end_time += timedelta(minutes=5)  # Add 5 minutes to the end time
-                self.time_increases += 1  # Increase the time_increases counter
+                if self.time_increases >= 5:
+                    self.end_time += timedelta(seconds=15)
+                elif self.time_increases >= 2:
+                    self.end_time += timedelta(seconds=30)
+                else:
+                    self.end_time += timedelta(minutes=1)
+
+                self.time_increases += 1
 
             self.current_price = bid_amount
             self.highest_bidder = bidder
@@ -103,21 +113,19 @@ def load_items_from_file():
             data = json.load(file)
             items = []
             for item_data in data:
-                item = AuctionItem(item_data['name'], item_data['starting_price'],
-                                   datetime.fromisoformat(item_data['end_time']),
-                                   item_data['image_filename'],
-                                   item_data['description'])
+                item = AuctionItem(
+                    item_data['name'],
+                    item_data['starting_price'],
+                    datetime.fromisoformat(item_data['end_time']),
+                    item_data['image_filename'],
+                    item_data['description'],
+                )
                 item.current_price = item_data['current_price']
-                bidder_data = item_data['highest_bidder']
-                if bidder_data:
-                    bidder = Bidder(bidder_data)
-                    item.highest_bidder = bidder
-                item.time_increases = item_data.get('time_increases', 0)  # Load time_increases or default to 0
+                item.time_increases = item_data.get('time_increases', 0)
                 items.append(item)
             return items
     except FileNotFoundError:
         return []
-
 
 
 
@@ -128,11 +136,11 @@ def save_items_to_file(items):
             'name': item.name,
             'starting_price': item.starting_price,
             'current_price': item.current_price,
-            'highest_bidder': item.highest_bidder.name if item.highest_bidder else None,  # Handle None value
+            'highest_bidder': item.highest_bidder.name if item.highest_bidder else None,
             'end_time': item.end_time.isoformat(),
             'image_filename': item.image_url.split('/')[-1],
             'description': item.description,
-            'time_increases': item.time_increases  # Add time_increases attribute to the data
+            'time_increases': item.time_increases,
         }
         data.append(item_data)
     with open('items.json', 'w') as file:

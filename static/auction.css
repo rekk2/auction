@@ -1,45 +1,52 @@
-{
-        font-family: 'Lato', sans-serif;
-    }
+* {
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
+}
 
-    * {
-        box-sizing: border-box;
-    }
+.item-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 45px; /* Adjust the negative margin as needed */
+  margin-left: -15px; /* Adjust the spacing between items */
+  margin-right: -15px; /* Adjust the spacing between items */
+}
 
-    .item-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        margin-bottom: 45px; /* Adjust the negative margin as needed */
-    }
+.item {
+  flex-basis: calc(25% - 20px); /* Adjust the spacing between items */
+  padding: 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  position: relative;
+  border: 4px solid #2969F2;
+  border-radius: 7px;
+  margin-bottom: 20px; /* Adjust the spacing between items */
+  margin-left: 10px; /* Adjust the spacing between items */
+  margin-right: 10px; /* Adjust the spacing between items */
+}
 
-    .item {
-        flex-basis: 25%;
-        padding: 2px;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        align-items: stretch; /* Added */
-    }
+.item img {
+  border: 1px solid black;
+  border-radius: 4px;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
 
-    .item-content {
-        flex-grow: 1;
-        padding: 10px;
-        background-color: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
+.item form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-    .item img {
-        max-width: 100%;
-        height: auto;
-        object-fit: contain;
-        margin-bottom: 10px;
-    }
-
+.item .timer {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
     h1 {
         font-family: 'Lato', sans-serif;
 		font-size: 25px;

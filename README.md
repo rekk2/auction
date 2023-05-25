@@ -1,13 +1,21 @@
 Auction
 
 Requirements:
+
 install python
+
 pip install flask
+
 pip install waitress
 
+
+
 Configuration: 
+
 edit title in auction.html
+
 change admin password in auction.py
+
 maybe edit wsgi.py if you run into problems
 
 

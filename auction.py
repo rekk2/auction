@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 import json
 import atexit
 import os
-import pytz
 from werkzeug.utils import secure_filename
+import pytz
 
 app = Flask(__name__)
 
@@ -25,6 +25,7 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}
+
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -110,12 +111,10 @@ def load_items_from_file():
             data = json.load(file)
             items = []
             for item_data in data:
-                end_time_utc = datetime.fromisoformat(item_data['end_time'])
-                end_time_est = end_time_utc.astimezone(pytz.timezone('US/Eastern'))
                 item = AuctionItem(
                     item_data['name'],
                     item_data['starting_price'],
-                    end_time_est,
+                    pytz.utc.localize(datetime.fromisoformat(item_data['end_time'])),
                     item_data['image_filename'],
                     item_data['description'],
                 )
@@ -135,7 +134,7 @@ def save_items_to_file(items):
             'starting_price': item.starting_price,
             'current_price': item.current_price,
             'highest_bidder': item.highest_bidder.name if item.highest_bidder else None,
-            'end_time': item.end_time.astimezone(pytz.timezone('UTC')).isoformat(),
+            'end_time': item.end_time.isoformat(),
             'image_filename': item.image_url.split('/')[-1],
             'description': item.description,
             'time_increases': item.time_increases,
@@ -200,7 +199,7 @@ def admin():
     if request.method == 'POST':
         name = request.form['name']
         starting_price = int(request.form['starting_price'])
-        end_time = datetime.strptime(request.form['end_time'], '%Y-%m-%dT%H:%M')
+        end_time = pytz.utc.localize(datetime.strptime(request.form['end_time'], '%Y-%m-%dT%H:%M'))
         description = request.form['description']
 
         image_file = request.files['image_file']

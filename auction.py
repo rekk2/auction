@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import json
 import atexit
 import os
+import pytz
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -21,14 +22,15 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Create the upload folder if it doesn't exist
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
-    
+
 
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}
 
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-           
+
+
 class AuctionItem:
     def __init__(self, name, starting_price, end_time, image_filename, description):
         self.name = name
@@ -41,7 +43,7 @@ class AuctionItem:
         self.time_increases = 0
 
     def time_remaining(self):
-        return self.end_time - datetime.now()
+        return self.end_time - datetime.now(pytz.utc)
 
     def place_bid(self, bidder, bid_amount):
         if bid_amount > self.current_price:
@@ -74,13 +76,8 @@ class AuctionItem:
         else:
             bidder.notify_invalid_bid(self.name, bid_amount, self.current_price)
 
-
-
-
-
-
     def is_expired(self):
-        return datetime.now() >= self.end_time
+        return datetime.now(pytz.utc) >= self.end_time
 
 
 class Bidder:
@@ -102,9 +99,9 @@ class Bidder:
         self.notifications_invalid = True
 
     def notify_invalid_bid(self, item_name, bid_amount, minimum_bid):
-        self.notifications.append(f"{item_name}: Your bid of {bid_amount} is too low. The minimum bid is {minimum_bid}. Please place a higher bid.")
+        self.notifications.append(
+            f"{item_name}: Your bid of {bid_amount} is too low. The minimum bid is {minimum_bid}. Please place a higher bid.")
         self.notifications_invalid = True
-
 
 
 def load_items_from_file():
@@ -113,10 +110,12 @@ def load_items_from_file():
             data = json.load(file)
             items = []
             for item_data in data:
+                end_time_utc = datetime.fromisoformat(item_data['end_time'])
+                end_time_est = end_time_utc.astimezone(pytz.timezone('US/Eastern'))
                 item = AuctionItem(
                     item_data['name'],
                     item_data['starting_price'],
-                    datetime.fromisoformat(item_data['end_time']),
+                    end_time_est,
                     item_data['image_filename'],
                     item_data['description'],
                 )
@@ -128,7 +127,6 @@ def load_items_from_file():
         return []
 
 
-
 def save_items_to_file(items):
     data = []
     for item in items:
@@ -137,7 +135,7 @@ def save_items_to_file(items):
             'starting_price': item.starting_price,
             'current_price': item.current_price,
             'highest_bidder': item.highest_bidder.name if item.highest_bidder else None,
-            'end_time': item.end_time.isoformat(),
+            'end_time': item.end_time.astimezone(pytz.timezone('UTC')).isoformat(),
             'image_filename': item.image_url.split('/')[-1],
             'description': item.description,
             'time_increases': item.time_increases,
@@ -147,7 +145,6 @@ def save_items_to_file(items):
         json.dump(data, file, indent=4)
 
 
-
 items = load_items_from_file()
 
 
@@ -155,9 +152,6 @@ items = load_items_from_file()
 def save_items(response):
     save_items_to_file(items)
     return response
-
-
-
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -195,7 +189,8 @@ def auction():
 @app.route('/empty')
 def empty_auction():
     return render_template('empty.html')
-    
+
+
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
     global admin_authenticated
@@ -207,7 +202,6 @@ def admin():
         starting_price = int(request.form['starting_price'])
         end_time = datetime.strptime(request.form['end_time'], '%Y-%m-%dT%H:%M')
         description = request.form['description']
-
 
         image_file = request.files['image_file']
         if image_file and allowed_file(image_file.filename):
@@ -249,7 +243,7 @@ def delete():
     if item_index < len(items):
         del items[item_index]
     return redirect(url_for('admin'))
-    
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000, host='0.0.0.0')

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import json
 import atexit
 import os
+import pytz
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -47,6 +48,7 @@ class AuctionItem:
         if bid_amount > self.current_price:
             if self.highest_bidder:
                 self.highest_bidder.notify_outbid(self.name, self.current_price)
+        
 
             if not self.is_expired() and self.time_remaining() < timedelta(minutes=30):
                 if self.time_increases >= 5:
@@ -79,8 +81,11 @@ class AuctionItem:
 
 
 
+#    def is_expired(self):
+#        return datetime.now() >= self.end_time
     def is_expired(self):
-        return datetime.now() >= self.end_time
+        current_time = datetime.now(pytz.timezone('America/New_York'))
+        return current_time >= self.end_time
 
 
 class Bidder:

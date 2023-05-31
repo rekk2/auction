@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from datetime import datetime, timedelta
 import json
 import atexit
@@ -6,12 +6,11 @@ import os
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
 
 # Define the admin password
 ADMIN_PASSWORD = "admin"
 
-# Variable to track if the user is authenticated as admin
-admin_authenticated = False
 
 # Define the upload folder
 UPLOAD_FOLDER = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static', 'images')
@@ -44,38 +43,41 @@ class AuctionItem:
         return self.end_time - datetime.now()
 
     def place_bid(self, bidder, bid_amount):
-        if bid_amount > self.current_price:
+        if not self.is_expired() and bid_amount > self.current_price:
+            # Calculate the minimum bid based on the number of time increases so far
+            if self.time_increases >= 5:
+                minimum_bid = self.current_price + 5
+            else:
+                minimum_bid = self.current_price + min(self.time_increases + 1, 4)
+            
+            # Check if the bid amount is less than the minimum bid
+            if bid_amount < minimum_bid:
+                bidder.notify_invalid_bid(self.name, bid_amount, minimum_bid)
+                return
+
+            # Notify the previous highest bidder that they've been outbid
             if self.highest_bidder:
                 self.highest_bidder.notify_outbid(self.name, self.current_price)
-        
-
-            if not self.is_expired() and self.time_remaining() < timedelta(minutes=30):
-                if self.time_increases >= 5:
-                    minimum_bid = self.current_price + 5
-                else:
-                    minimum_bid = self.current_price + min(self.time_increases + 1, 4)
-
-                if bid_amount < minimum_bid:
-                    bidder.notify_invalid_bid(self.name, bid_amount, minimum_bid)
-                    return
-
+            
+            # Increase the time remaining based on the number of time increases so far
+            if self.time_remaining() < timedelta(minutes=30):
                 if self.time_increases >= 5:
                     self.end_time += timedelta(seconds=15)
                 elif self.time_increases >= 2:
                     self.end_time += timedelta(seconds=30)
                 else:
                     self.end_time += timedelta(minutes=1)
-
                 self.time_increases += 1
 
+            # Set the new highest bid and notify the bidder
             self.current_price = bid_amount
             self.highest_bidder = bidder
             bidder.notify_winning_bid(self.name, bid_amount)
-            self.time_increases += 1
-            save_items_to_file(items)  # Save the items after each bid
+
+            # Save the items after each bid
+            save_items_to_file(items)
         else:
             bidder.notify_invalid_bid(self.name, bid_amount, self.current_price)
-
 
 
 
@@ -198,12 +200,12 @@ def auction():
 def empty_auction():
     return render_template('empty.html')
     
+
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
-    global admin_authenticated
-    if not admin_authenticated:
+    if not session.get('admin_authenticated'): 
         return redirect(url_for('login'))
-
+        
     if request.method == 'POST':
         name = request.form['name']
         starting_price = int(request.form['starting_price'])
@@ -229,12 +231,10 @@ def admin():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    global admin_authenticated
-
     if request.method == 'POST':
         password = request.form.get('password')
         if password == ADMIN_PASSWORD:
-            admin_authenticated = True
+            session['admin_authenticated'] = True  # <-- Add this
             return redirect(url_for('admin'))
 
         # Password is incorrect, display an error message
@@ -243,6 +243,7 @@ def login():
 
     # GET request, display the login form
     return render_template('login.html')
+
 
 
 @app.route('/delete', methods=['POST'])

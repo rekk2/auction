@@ -71,6 +71,7 @@ class AuctionItem:
             self.current_price = bid_amount
             self.highest_bidder = bidder
             bidder.notify_winning_bid(self.name, bid_amount)
+            self.time_increases += 1
             save_items_to_file(items)  # Save the items after each bid
         else:
             bidder.notify_invalid_bid(self.name, bid_amount, self.current_price)

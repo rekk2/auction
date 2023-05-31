@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 import json
 import atexit
 import os
-import pytz
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -81,11 +80,8 @@ class AuctionItem:
 
 
 
-#    def is_expired(self):
-#        return datetime.now() >= self.end_time
     def is_expired(self):
-        current_time = datetime.now(pytz.timezone('America/New_York'))
-        return current_time >= self.end_time
+        return datetime.now() >= self.end_time
 
 
 class Bidder:

@@ -4,6 +4,10 @@ Requirements:
 
 install python
 
+sudo apt update
+
+sudo apt install python3-pip
+
 pip3 install flask
 
 pip3 install waitress
@@ -17,7 +21,6 @@ edit title in auction.html
 
 change admin password in auction.py
 
-maybe edit wsgi.py if you run into problems with waitress.  or you can run auction.py from gunicorn
 
 
 
@@ -29,3 +32,6 @@ sudo waitress-serve --port=80 wsgi:app
 
 or
 sudo waitress-serve --host=<your_vm_ip_address> --port=80 wsgi:app
+
+or
+sudo gunicorn -b :80 auction:app

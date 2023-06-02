@@ -1,37 +1,56 @@
-Auction
+Install instructions:
 
-Requirements:
+sudo python3 -m venv venv
+source venv/bin/activate
+sudo vi /etc/systemd/system/myproject.service
 
-install python
+code for myproject.service
 
-sudo apt update
+[Unit]
+Description=Gunicorn instance to serve myproject
+After=network.target
 
-sudo apt install python3-pip
+[Service]
+User=username
+Group=www-data
+WorkingDirectory=/path/to/your/project
+Environment="PATH=/path/to/your/project/venv/bin"
+ExecStart=/path/to/your/project/venv/bin/gunicorn -b :8080 auction:app
 
-pip3 install flask
+[Install]
+WantedBy=multi-user.target
 
-pip3 install waitress
+save and exit by typing :wq
+
+pip install flask
+pip install gunicorn
+sudo systemctl daemon-reload
+sudo systemctl start myproject
+sudo systemctl enable myproject
+sudo systemctl status myproject
+
+sudo apt-get update
+sudo apt-get install nginx
+sudo systemctl start nginx
+
+sudo vi /etc/nginx/sites-available/myproject
 
 
+server {
+    listen 80;
+    server_name YOUR_IP_ADDRESS;
 
-Configuration: 
-set local time zone of server, example: sudo timedatectl set-timezone America/New_York
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
 
-edit title in auction.html
+save and exit by typing :wq
 
-change admin password in auction.py
-
-
-
-
-Command to start server:
-
-cd to auction folder 
-
-sudo waitress-serve --port=80 wsgi:app
-
-or
-sudo waitress-serve --host=<your_vm_ip_address> --port=80 wsgi:app
-
-or
-sudo gunicorn -b :80 auction:app
+sudo ln -s /etc/nginx/sites-available/myproject /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx

@@ -75,8 +75,5 @@ sudo ln -s /etc/nginx/sites-available/myproject /etc/nginx/sites-enabled/
 # Remove default Nginx configuration
 sudo rm /etc/nginx/sites-enabled/default
 
-# Reload Nginx to apply the changes
-sudo systemctl reload nginx
-
 sudo nginx -t
 sudo systemctl reload nginx

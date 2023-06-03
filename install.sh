@@ -5,6 +5,9 @@ USERNAME="your_username"
 PROJECT_PATH="/auction"
 TITLE="Your Title"
 
+# Set Timezone
+sudo timedatectl set-timezone America/New_York
+
 # Updating system
 sudo apt-get update
 sudo apt-get upgrade -y

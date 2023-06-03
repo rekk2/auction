@@ -42,7 +42,7 @@ User=$USERNAME
 Group=www-data
 WorkingDirectory=$PROJECT_PATH
 Environment=\"PATH=$PROJECT_PATH/venv/bin\"
-ExecStart=${PROJECT_PATH}/venv/bin/gunicorn -b :8080 auction:app
+ExecStart=/usr/local/bin/gunicorn -b :8080 auction:app
 
 [Install]
 WantedBy=multi-user.target" | sudo tee /etc/systemd/system/myproject.service

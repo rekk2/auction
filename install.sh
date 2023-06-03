@@ -56,8 +56,9 @@ sudo systemctl status myproject
 # Configuring nginx
 sudo systemctl start nginx
 
-# Write Nginx configuration for the project
-sudo sh -c 'printf "server {
+# Create and write to Nginx configuration for the project
+sudo touch /etc/nginx/sites-available/myproject
+echo "server {
     listen 80;
     server_name _;
 
@@ -68,7 +69,7 @@ sudo sh -c 'printf "server {
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
-}" > /etc/nginx/sites-available/myproject'
+}" | sudo tee /etc/nginx/sites-available/myproject
 
 # Creating a symbolic link
 sudo ln -s /etc/nginx/sites-available/myproject /etc/nginx/sites-enabled/

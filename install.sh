@@ -56,12 +56,8 @@ sudo systemctl status myproject
 # Configuring nginx
 sudo systemctl start nginx
 
-# Change permissions of the sites-available directory
-sudo chmod 777 /etc/nginx/sites-available/
-
-# Create and write to Nginx configuration for the project
-sudo touch /etc/nginx/sites-available/myproject
-echo "server {
+# Write to Nginx configuration for the project
+sudo bash -c "echo 'server {
     listen 80;
     server_name _;
 
@@ -72,10 +68,7 @@ echo "server {
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
-}" | sudo tee /etc/nginx/sites-available/myproject
-
-# Change permissions back to default
-sudo chmod 755 /etc/nginx/sites-available/
+}' > /etc/nginx/sites-available/myproject"
 
 # Creating a symbolic link
 sudo ln -s /etc/nginx/sites-available/myproject /etc/nginx/sites-enabled/

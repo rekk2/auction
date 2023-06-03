@@ -53,9 +53,6 @@ sudo systemctl enable myproject
 # Checking the status of the service
 sudo systemctl status myproject
 
-# Configuring nginx
-sudo systemctl start nginx
-
 # Write to Nginx configuration for the project
 sudo bash -c "echo 'server {
     listen 80;
@@ -78,5 +75,8 @@ if [ -e /etc/nginx/sites-enabled/default ]; then
     sudo rm /etc/nginx/sites-enabled/default
 fi
 
-# Test Nginx configuration and reload if it's okay
-sudo nginx -t && sudo systemctl reload nginx
+# Test Nginx configuration 
+sudo nginx -t
+
+# Configuring nginx
+sudo systemctl start nginx

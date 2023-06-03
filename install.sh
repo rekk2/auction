@@ -73,7 +73,7 @@ echo "server {
 sudo ln -s /etc/nginx/sites-available/myproject /etc/nginx/sites-enabled/
 
 # Remove default Nginx configuration
-sudo rm /etc/nginx/sites-enabled/default
+# sudo rm /etc/nginx/sites-enabled/default
 
 sudo nginx -t
 sudo systemctl reload nginx

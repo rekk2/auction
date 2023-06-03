@@ -11,10 +11,6 @@ read TITLE
 # Set Timezone
 sudo timedatectl set-timezone America/New_York || exit 1
 
-# Updating system
-sudo apt-get update || exit 1
-sudo apt-get upgrade -y || exit 1
-
 # Installing necessary packages
 sudo apt-get install -y python3-venv python3-pip git nginx || exit 1
 

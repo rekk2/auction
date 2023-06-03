@@ -43,6 +43,23 @@ sudo gunicorn -b :80 auction:app
 
 **Virtual Enviornment Install Instructions**
 
+sudo apt update
+
+sudo apt upgrade
+
+sudo apt install python3-venv
+
+sudo apt-get install python3-pip
+
+sudo apt install git
+
+git clone https://rekk2/auction.git
+
+cd auction
+
+pwd
+
+shows full path of auction folder, it will be copied into your service config file
 
 sudo python3 -m venv venv
 
@@ -70,18 +87,21 @@ WorkingDirectory=/path/to/your/project
 
 Environment="PATH=/path/to/your/project/venv/bin"
 
-ExecStart=/path/to/your/project/venv/bin/gunicorn -b :8080 auction:app
+WorkingDirectory=/path/to/your/project
+
+ExecStart=/usr/local/bin/gunicorn -b :8080 auction:app
 
 [Install]
 
 WantedBy=multi-user.target
 
-save and exit by typing :wq
+save by hitting esc then :wq
 
+ln -s /path/to/your/project /path/to/your/project/venv/bin
 
-pip install flask
+sudo pip install flask
 
-pip install gunicorn
+sudo pip install gunicorn
 
 sudo systemctl daemon-reload
 
@@ -91,7 +111,6 @@ sudo systemctl enable myproject
 
 sudo systemctl status myproject
 
-sudo apt-get update
 
 sudo apt-get install nginx
 
@@ -102,7 +121,7 @@ sudo vi /etc/nginx/sites-available/myproject
 
 server {
     listen 80;
-    server_name YOUR_IP_ADDRESS;
+    server_name ip.add.re.ss
 
     location / {
         proxy_pass http://localhost:8080;
@@ -113,7 +132,8 @@ server {
     }
 }
 
-save and exit by typing :wq
+
+save and exit by hitting esc then :wq
 
 
 sudo ln -s /etc/nginx/sites-available/myproject /etc/nginx/sites-enabled/

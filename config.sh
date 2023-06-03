@@ -27,3 +27,4 @@ sudo nginx -t
 
 # Configuring nginx
 sudo systemctl start nginx
+sudo systemctl reload nginx

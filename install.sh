@@ -49,6 +49,3 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/myproject.service
 sudo systemctl daemon-reload
 sudo systemctl start myproject
 sudo systemctl enable myproject
-
-# Checking the status of the service
-sudo systemctl status myproject
